@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 import mongoose , {Schema} from "mongoose";
 
-const portfolioSchema = new Schema({
+const projectSchema = new Schema({
     title : {
         type : String,
         required : true,
@@ -38,4 +38,4 @@ const portfolioSchema = new Schema({
     }
 );
 
-export const Portfolio = mongoose.model("Portfolio" , portfolioSchema);
+export const Project = mongoose.model("Project" , projectSchema);
