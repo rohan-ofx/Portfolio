@@ -1,16 +1,47 @@
 import APiError from "../utils/ApiErrors.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import { createproject } from "../services/project.services.js";
 import asyncHandler from "../utils/asynchandler.js";
+import { Project } from "../models/project.model.js";
 
-export const createprojectController = asyncHandler(async(req , res) =>{
-    const project = await createproject(req.body);
+const createProject = asyncHandler(async(req, res)=>{
+    const{
+         title,
+         description,
+         technologies,
+         image,
+         githubUrl,
+          liveUrl ,
+          featured
+        } =req.body;
 
-    return res.status(201).json(
-        new ApiResponse(
-            201,
-            project,
-            "project created Successfully"
-        )
-    );
+        if(
+            !title ||  !description || !technologies
+        ){
+            throw new APiError(
+                400,
+                "Title , description and technologies are required"
+            );
+        }
+
+        // create project
+
+        const project = await Project.create({
+            title,
+            description,
+            technologies,
+            image,
+            githubUrl,
+            liveUrl,
+            featured,
+        });
+
+        return res.status(201).json(
+            new ApiResponse(
+                201,
+                project,
+                "project created successfully"
+            )
+        );
 });
+
+export default createProject;

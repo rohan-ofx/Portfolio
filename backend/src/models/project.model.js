@@ -1,5 +1,6 @@
 import { Schema } from "mongoose";
-import mongoose , {Schema} from "mongoose";
+import mongoose  from "mongoose";
+
 
 const projectSchema = new Schema({
     title : {
@@ -24,7 +25,7 @@ const projectSchema = new Schema({
         type: String,
         default : "",
     },
-    liveurl : {
+    liveUrl : {
         type : String,
         default :"",
     },
