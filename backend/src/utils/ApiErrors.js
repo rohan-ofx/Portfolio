@@ -21,4 +21,4 @@ class APiError extends Error{
     }
 }
 
-export default APiError
+export default APiError;
