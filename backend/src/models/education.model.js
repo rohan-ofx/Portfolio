@@ -21,7 +21,7 @@ const educationSchema = new Schema({
         required : true,
     },
     endDate : {
-        type : true,
+        type : Date,
         default : null,
     },
     grade : {

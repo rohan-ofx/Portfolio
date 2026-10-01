@@ -2,7 +2,7 @@ import mongoose,{Schema} from "mongoose";
 
 const codingSchema =  new Schema({
     platform : {
-        title : String,
+        type: String,
         required : true,
         trim : true,
     },

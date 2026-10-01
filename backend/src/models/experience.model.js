@@ -30,7 +30,7 @@ const experienceSchema = new Schema ({
             required :true,
             trim : true,
     },
-    techonologies : {
+    technologies : {
         type : [String],
         default : [],
     },
