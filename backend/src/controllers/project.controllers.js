@@ -2,6 +2,7 @@ import APiError from "../utils/ApiErrors.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
 import { Project } from "../models/project.model.js";
+import uploadToCloudinary from "../utils/cloudinaryUpload.js";
 
 
 
@@ -17,9 +18,6 @@ const createProject = asyncHandler(async(req, res)=>{
           featured
         } =req.body;
 
-        console.log("title:", title);
-  console.log("description:", description);
-  console.log("technologies:", technologies);
 
         if(
             !title ||  !description || !technologies
@@ -30,13 +28,18 @@ const createProject = asyncHandler(async(req, res)=>{
             );
         }
 
+        let imageUrl = "";
+        if(req.file){
+            imageUrl = await uploadToCloudinary(req.file.buffer);
+        }
+
         // create project
 
         const project = await Project.create({
             title,
             description,
             technologies,
-            image,
+            image : imageUrl,
             githubUrl,
             liveUrl,
             featured,
@@ -129,6 +132,19 @@ const updateProject = asyncHandler(async(req, res)=>{
                 400,
                 "ALL Field are Required"
             );
+        }
+        const existingProject = await Project.findById(id);
+        if(!existingProject){
+            throw new APiError(
+                404,
+                "Project not Found"
+            );
+        }
+
+        let imageUrl = existingProject.image  || "";
+
+        if(req.file){
+            imageUrl = await uploadToCloudinary(req.file.buffer);
         }
 
         const updateProject = await Project.findByIdAndUpdate(

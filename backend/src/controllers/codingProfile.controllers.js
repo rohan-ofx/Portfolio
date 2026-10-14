@@ -3,7 +3,6 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
 import { CodingProfile } from "../models/codingprofile.model.js";
 
-
 // CREATE CODING PROFILE
 const createCodingProfile = asyncHandler(async (req, res) => {
   const {
@@ -12,7 +11,10 @@ const createCodingProfile = asyncHandler(async (req, res) => {
     profileUrl,
     icon,
     description,
-    order
+    problemsSolved,
+    rating,
+    rank,
+    order,
   } = req.body;
 
   if (!platform || !username || !profileUrl) {
@@ -28,7 +30,10 @@ const createCodingProfile = asyncHandler(async (req, res) => {
     profileUrl,
     icon,
     description,
-    order
+    problemsSolved,
+    rating,
+    rank,
+    order,
   });
 
   return res.status(201).json(
@@ -40,11 +45,11 @@ const createCodingProfile = asyncHandler(async (req, res) => {
   );
 });
 
-
 // GET ALL CODING PROFILES
 const getAllCodingProfiles = asyncHandler(async (req, res) => {
   const codingProfiles = await CodingProfile.find().sort({
-    order: 1
+    order: 1,
+    createdAt: -1,
   });
 
   return res.status(200).json(
@@ -56,7 +61,6 @@ const getAllCodingProfiles = asyncHandler(async (req, res) => {
   );
 });
 
-
 // GET CODING PROFILE BY ID
 const getCodingProfileById = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -64,10 +68,7 @@ const getCodingProfileById = asyncHandler(async (req, res) => {
   const codingProfile = await CodingProfile.findById(id);
 
   if (!codingProfile) {
-    throw new APiError(
-      404,
-      "Coding profile not found"
-    );
+    throw new APiError(404, "Coding profile not found");
   }
 
   return res.status(200).json(
@@ -79,7 +80,6 @@ const getCodingProfileById = asyncHandler(async (req, res) => {
   );
 });
 
-
 // UPDATE CODING PROFILE
 const updateCodingProfile = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -90,7 +90,10 @@ const updateCodingProfile = asyncHandler(async (req, res) => {
     profileUrl,
     icon,
     description,
-    order
+    problemsSolved,
+    rating,
+    rank,
+    order,
   } = req.body;
 
   if (!platform || !username || !profileUrl) {
@@ -104,24 +107,26 @@ const updateCodingProfile = asyncHandler(async (req, res) => {
     await CodingProfile.findByIdAndUpdate(
       id,
       {
-        platform,
-        username,
-        profileUrl,
-        icon,
-        description,
-        order
+        $set: {
+          platform,
+          username,
+          profileUrl,
+          icon,
+          description,
+          problemsSolved,
+          rating,
+          rank,
+          order,
+        },
       },
       {
         new: true,
-        runValidators: true
+        runValidators: true,
       }
     );
 
   if (!updatedCodingProfile) {
-    throw new APiError(
-      404,
-      "Coding profile not found"
-    );
+    throw new APiError(404, "Coding profile not found");
   }
 
   return res.status(200).json(
@@ -133,7 +138,6 @@ const updateCodingProfile = asyncHandler(async (req, res) => {
   );
 });
 
-
 // DELETE CODING PROFILE
 const deleteCodingProfile = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -142,10 +146,7 @@ const deleteCodingProfile = asyncHandler(async (req, res) => {
     await CodingProfile.findByIdAndDelete(id);
 
   if (!deletedCodingProfile) {
-    throw new APiError(
-      404,
-      "Coding profile not found"
-    );
+    throw new APiError(404, "Coding profile not found");
   }
 
   return res.status(200).json(
@@ -157,11 +158,10 @@ const deleteCodingProfile = asyncHandler(async (req, res) => {
   );
 });
 
-
 export {
   createCodingProfile,
   getAllCodingProfiles,
   getCodingProfileById,
   updateCodingProfile,
-  deleteCodingProfile
+  deleteCodingProfile,
 };

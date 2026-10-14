@@ -31,6 +31,11 @@ const certificateSchema = new Schema({
       default: "",
       trim: true,
     },
+    description: {
+  type: String,
+  default: "",
+  trim: true,
+},
 },{
     timestamps : true,
 });

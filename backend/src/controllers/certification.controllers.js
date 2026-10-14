@@ -2,24 +2,23 @@ import APiError from "../utils/ApiErrors.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
 import { Certificate } from "../models/certificate.model.js";
-
+import uploadToCloudinary from "../utils/cloudinaryUpload.js";
 
 // CREATE CERTIFICATION
 const createCertification = asyncHandler(async (req, res) => {
-
   const {
     title,
     issuer,
     issueDate,
     credentialId,
     credentialUrl,
-    certificateUrl
+    description,
   } = req.body;
 
-
+  // Validate required fields
   if (
-    !title ||
-    !issuer ||
+    !title?.trim() ||
+    !issuer?.trim() ||
     !issueDate
   ) {
     throw new APiError(
@@ -28,16 +27,26 @@ const createCertification = asyncHandler(async (req, res) => {
     );
   }
 
+  // Upload certificate image if provided
+  let certificateImageUrl = "";
 
+  if (req.file) {
+    certificateImageUrl = await uploadToCloudinary(
+      req.file.buffer,
+      "portfolio/certificates"
+    );
+  }
+
+  // Create certificate in MongoDB
   const certification = await Certificate.create({
-    title,
-    issuer,
+    title: title.trim(),
+    issuer: issuer.trim(),
     issueDate,
-    credentialId,
-    credentialUrl,
-    certificateUrl
+    credentialId: credentialId?.trim() || "",
+    credentialUrl: credentialUrl?.trim() || "",
+    description: description?.trim() || "",
+    certificateUrl: certificateImageUrl,
   });
-
 
   return res.status(201).json(
     new ApiResponse(
@@ -48,13 +57,10 @@ const createCertification = asyncHandler(async (req, res) => {
   );
 });
 
-
 // GET ALL CERTIFICATIONS
 const getAllCertifications = asyncHandler(async (req, res) => {
-
   const certifications = await Certificate.find()
     .sort({ issueDate: -1 });
-
 
   return res.status(200).json(
     new ApiResponse(
@@ -65,23 +71,15 @@ const getAllCertifications = asyncHandler(async (req, res) => {
   );
 });
 
-
 // GET CERTIFICATION BY ID
 const getCertificationById = asyncHandler(async (req, res) => {
-
   const { id } = req.params;
-
 
   const certification = await Certificate.findById(id);
 
-
   if (!certification) {
-    throw new APiError(
-      404,
-      "Certification not found"
-    );
+    throw new APiError(404, "Certification not found");
   }
-
 
   return res.status(200).json(
     new ApiResponse(
@@ -92,10 +90,8 @@ const getCertificationById = asyncHandler(async (req, res) => {
   );
 });
 
-
 // UPDATE CERTIFICATION
 const updateCertification = asyncHandler(async (req, res) => {
-
   const { id } = req.params;
 
   const {
@@ -104,13 +100,13 @@ const updateCertification = asyncHandler(async (req, res) => {
     issueDate,
     credentialId,
     credentialUrl,
-    certificateUrl
+    description,
   } = req.body;
 
-
+  // Validate required fields
   if (
-    !title ||
-    !issuer ||
+    !title?.trim() ||
+    !issuer?.trim() ||
     !issueDate
   ) {
     throw new APiError(
@@ -119,32 +115,45 @@ const updateCertification = asyncHandler(async (req, res) => {
     );
   }
 
+  // Find existing certificate
+  const existingCertification = await Certificate.findById(id);
 
-  const updatedCertification =
-    await Certificate.findByIdAndUpdate(
-      id,
-      {
-        title,
-        issuer,
-        issueDate,
-        credentialId,
-        credentialUrl,
-        certificateUrl
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+  if (!existingCertification) {
+    throw new APiError(404, "Certification not found");
+  }
 
+  // Preserve old image unless a new image is uploaded
+  let certificateImageUrl =
+    existingCertification.certificateUrl || "";
 
-  if (!updatedCertification) {
-    throw new APiError(
-      404,
-      "Certification not found"
+  if (req.file) {
+    certificateImageUrl = await uploadToCloudinary(
+      req.file.buffer,
+      "portfolio/certificates"
     );
   }
 
+  // Update certificate
+  const updatedCertification = await Certificate.findByIdAndUpdate(
+    id,
+    {
+      title: title.trim(),
+      issuer: issuer.trim(),
+      issueDate,
+      credentialId: credentialId?.trim() || "",
+      credentialUrl: credentialUrl?.trim() || "",
+      description: description?.trim() || "",
+      certificateUrl: certificateImageUrl,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!updatedCertification) {
+    throw new APiError(404, "Certification not found");
+  }
 
   return res.status(200).json(
     new ApiResponse(
@@ -155,24 +164,15 @@ const updateCertification = asyncHandler(async (req, res) => {
   );
 });
 
-
 // DELETE CERTIFICATION
 const deleteCertification = asyncHandler(async (req, res) => {
-
   const { id } = req.params;
 
-
-  const deletedCertification =
-    await Certificate.findByIdAndDelete(id);
-
+  const deletedCertification = await Certificate.findByIdAndDelete(id);
 
   if (!deletedCertification) {
-    throw new APiError(
-      404,
-      "Certification not found"
-    );
+    throw new APiError(404, "Certification not found");
   }
-
 
   return res.status(200).json(
     new ApiResponse(
@@ -183,11 +183,10 @@ const deleteCertification = asyncHandler(async (req, res) => {
   );
 });
 
-
 export {
   createCertification,
   getAllCertifications,
   getCertificationById,
   updateCertification,
-  deleteCertification
+  deleteCertification,
 };

@@ -16,7 +16,7 @@ const educationSchema = new Schema({
         required: true,
         trim : true,
     },
-    StartDate : {
+    startDate : {
         type : Date,
         required : true,
     },

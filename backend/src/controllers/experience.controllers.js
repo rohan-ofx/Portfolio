@@ -4,38 +4,50 @@ import asyncHandler from "../utils/asynchandler.js";
 import {Experience} from "../models/experience.model.js"
 
 
-const createExperience = asyncHandler(async(req, res)=>{
+const createExperience = asyncHandler(async (req, res) => {
     const {
-    company,
-    position,
-     location,
-     startDate,
-     endDate,
-     description,
-     technologies
-}=req.body;
-if([company,position,startDate,description].some(field => field?.trim() ==="")){
-    throw new APiError(
-        404,
-        "All field is required"
+        role,
+        company,
+        location,
+        employmentType,
+        startDate,
+        endDate,
+        description,
+        technologies,
+        isCurrent,
+    } = req.body;
+
+    if (
+        !role?.trim() ||
+        !company?.trim() ||
+        !startDate ||
+        !description?.trim()
+    ) {
+        throw new APiError(
+            400,
+            "Role, company, start date and description are required"
+        );
+    }
+
+    const createdExperience = await Experience.create({
+        company: company.trim(),
+        position: role.trim(),
+        location,
+        employmentType,
+        startDate,
+        endDate: isCurrent ? undefined : endDate,
+        current: Boolean(isCurrent),
+        description: description.trim(),
+        technologies,
+    });
+
+    return res.status(201).json(
+        new ApiResponse(
+            201,
+            createdExperience,
+            "Experience created successfully"
+        )
     );
-}
-const createdExperience = await Experience.create({
-    company,
-    position,
-     location,
-     startDate,
-     endDate,
-     description,
-     technologies
-});
-return res.status(201).json(
-    new ApiResponse(
-        200,
-        createdExperience,
-        "Experience field created Successfully"
-    )
-);
 });
 
 const getAllExperiences = asyncHandler(async(req,res)=>{
@@ -75,36 +87,42 @@ const getExperienceById = asyncHandler(async(req,res)=>{
 const updateExperience = asyncHandler(async(req,res)=>{
     const {id} = req.params;
 
-    const{
-         company,
-    position,
+   const {
+    role,
+    company,
     location,
+    employmentType,
     startDate,
     endDate,
-    current,
     description,
-    technologies
-  } = req.body;
+    technologies,
+    isCurrent,
+} = req.body;
 
-  if([company,position,startDate,description].some(field=>field?.trim()==="")){
+ if (
+    !role?.trim() ||
+    !company?.trim() ||
+    !startDate ||
+    !description?.trim()
+) {
     throw new APiError(
-      400,
-      "Company, position, start date and description are required"
+        400,
+        "Role, company, start date and description are required"
     );
-
-  }
+}
 
   const updateExperience = await Experience.findByIdAndUpdate(
     id,{
-         company,
-        position,
-        location,
-        startDate,
-        endDate,
-        current,
-        description,
-        technologies
-    },{
+    company,
+    position: role,
+    location,
+    employmentType,
+    startDate,
+    endDate: isCurrent ? undefined : endDate,
+    current: Boolean(isCurrent),
+    description:description.trim(),
+    technologies,
+},{
         new:true,
         runValidators:true
     }

@@ -78,17 +78,32 @@ const loginuser = asyncHandler(async(req, res)=>{
         );
     }
 
-    const accessToken = jwt.sign({
-        _id : user._id,
-        username : user.username,
-        email: user.email,
-        role : user.role,
-    },
+    const tokenPayload = {
+        _id: user._id,
+        username:user.username,
+        email:user.email,
+        role:user.role,
+    };
+
+    const accessToken = jwt.sign(
+        tokenPayload,
     process.env.JWT_SECRET,
     {
         expiresIn: process.env.JWT_EXPIRES_IN || "1hr",
     }
 );
+
+
+
+const refreshToken = jwt.sign({
+    _id:user._id
+},process.env.JWT_REFRESH_SECRET,
+{
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+});
+
+user.refreshToken = refreshToken;
+await user.save({validateBeforeSave: false});
 
     const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
@@ -107,6 +122,7 @@ const loginuser = asyncHandler(async(req, res)=>{
             {
                 user : loggedInUser,
                 accessToken,
+                refreshToken,
             },
             "User logged in Successfully"
         )
@@ -115,7 +131,96 @@ const loginuser = asyncHandler(async(req, res)=>{
 
 });
 
+const refreshAccessToken = asyncHandler(async(req,res) => {
+    const incomingRefreshToken = req.body.refreshToken;
+
+    if(!incomingRefreshToken){
+        throw new APiError(401,
+            "Refresh token is required"
+        );
+    }
+
+    let decodedToken;
+
+    try{
+        decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.JWT_REFRESH_SECRET
+        );
+
+    }catch(error){
+        throw new APiError(
+            401,
+            "Invalid or expire refreshToken"
+        );
+    }
+
+    const user = await User.findById(decodedToken._id);
+
+    if(!user || !user.isActive || user.refreshToken !== incomingRefreshToken){
+        throw new APiError(
+            401,
+            "Invalid refresh token"
+        );
+    }
+
+    const tokenPayload = {
+        _id: user._id,
+        username:user.username,
+        email:user.email,
+        role:user.role,
+    };
+
+    const newAccessToken = jwt.sign(
+        tokenPayload,
+        process.env.JWT_SECRET,
+         {
+        expiresIn: process.env.JWT_EXPIRES_IN || "1hr",
+    }
+    );
+
+    const newRefreshToken = jwt.sign(
+        {_id: user._id},
+        process.env.JWT_REFRESH_SECRET,
+        {
+            expiresIn :process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+        }
+    );
+    user.refreshToken = newRefreshToken;
+     await user.save({ validateBeforeSave: false });
+
+        return res.status(200).json(
+         new ApiResponse(
+      200,
+      {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+      "Access token refreshed successfully"
+    )
+  );
+});
+
+const logoutUser = asyncHandler(async(req,res)=>{
+    const user = await User.find.findById(req.user._id);
+
+    if(!user){
+        throw new APiError(
+            404,
+            "user not found"
+        );
+    }
+    user.refreshToken = "";
+    await user.save({validateBeforeSave: false});
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "user logged out successfully"
+        )
+    );
+});
 
 
-
-export {registerUser , loginuser};
+export {registerUser , loginuser, refreshAccessToken , logoutUser};

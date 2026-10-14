@@ -19,23 +19,49 @@ const createEducation = asyncHandler(async (req, res) => {
 
 
   if (
-    [ !institution, degree, fieldOfStudy, startDate].some(field => field?.trim()==="")
+    !institution?.trim() ||
+    !degree?.trim() ||
+    !fieldOfStudy?.trim() ||
+    !startDate
   ) {
     throw new APiError(
       400,
       "Institution, degree, field of study and start date are required"
     );
   }
+  const parsedStartDate = new Date(startDate);
+
+  if (Number.isNaN(parsedStartDate.getTime())) {
+    throw new APiError(400, "Invalid start date");
+  }
+
+  let parsedEndDate = null;
+
+  if (endDate) {
+    parsedEndDate = new Date(endDate);
+
+    if (Number.isNaN(parsedEndDate.getTime())) {
+      throw new APiError(400, "Invalid end date");
+    }
+
+    if (parsedEndDate < parsedStartDate) {
+      throw new APiError(
+        400,
+        "End date cannot be earlier than start date"
+      );
+    }
+  }
 
 
   const education = await Education.create({
-    institution,
-    degree,
-    fieldOfStudy,
-    startDate,
-    endDate,
-    grade,
-    description
+      institution: institution.trim(),
+    degree: degree.trim(),
+    fieldOfStudy: fieldOfStudy.trim(),
+    startDate: parsedStartDate,
+    endDate: parsedEndDate,
+    grade: grade?.trim() || "",
+    description: description?.trim() || "",
+
   });
 
 

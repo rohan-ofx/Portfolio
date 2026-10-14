@@ -1,42 +1,55 @@
-import mongoose,{Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const experienceSchema = new Schema ({
-    company : {
-        type:String,
-        required : true,
-        trim : true,
+const experienceSchema = new Schema(
+    {
+        company: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        position: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        location: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        employmentType: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        startDate: {
+            type: Date,
+            required: true,
+        },
+        endDate: {
+            type: Date,
+            default: null,
+        },
+        current: {
+            type: Boolean,
+            default: false,
+        },
+        description: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        technologies: {
+            type: [String],
+            default: [],
+        },
     },
-    position : {
-        type : String,
-        required: true,
-        trim : true,
-    },
-    location:{
-        type : String,
-        default : "",
-        trim : true,
-    },
-     startDate : {
-        type:Date,
-        required : true,
-     },
-     endDate : {
-        type:Date,
-        default : null,
-     },
-     
-     description : {
-            type : String,
-            required :true,
-            trim : true,
-    },
-    technologies : {
-        type : [String],
-        default : [],
-    },
-     
-},{
-    timestamps : true,
-});
+    {
+        timestamps: true,
+    }
+);
 
-export const Experience = mongoose.model("Experience",experienceSchema);
+export const Experience = mongoose.model(
+    "Experience",
+    experienceSchema
+);
