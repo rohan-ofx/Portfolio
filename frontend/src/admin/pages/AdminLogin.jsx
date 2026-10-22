@@ -192,11 +192,11 @@ navigate("/admin/dashboard");
               <span />
             </div>
 
-            <p className="auth-switch">
+            {/* <p className="auth-switch">
               First time setting things up?
               {" "}
               <Link to="/admin/register">Create account <span>↗</span></Link>
-            </p>
+            </p> */}
 
             <div className="auth-security-note">
               <span className="security-icon">◇</span>

@@ -4,7 +4,7 @@ import {registerUser , loginuser,refreshAccessToken,logoutUser} from "../control
 
 const router = Router();
 
-router.post("/register", registerUser);
+// router.post("/register", registerUser);
 router.post("/login" , loginuser);
 router.post("/refresh-token", refreshAccessToken)
 router.post("/logout", verifyJWT , logoutUser);
