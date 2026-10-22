@@ -1,8 +1,18 @@
+
 import APiError from "../utils/ApiErrors.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
 import { Certificate } from "../models/certificate.model.js";
 import uploadToCloudinary from "../utils/cloudinaryUpload.js";
+
+// Helper: Get URL from Cloudinary upload result
+const getCertificateImageUrl = (uploadedCertificate) => {
+  if (typeof uploadedCertificate === "string") {
+    return uploadedCertificate;
+  }
+
+  return uploadedCertificate?.url || "";
+};
 
 // CREATE CERTIFICATION
 const createCertification = asyncHandler(async (req, res) => {
@@ -15,29 +25,36 @@ const createCertification = asyncHandler(async (req, res) => {
     description,
   } = req.body;
 
-  // Validate required fields
-  if (
-    !title?.trim() ||
-    !issuer?.trim() ||
-    !issueDate
-  ) {
+  if (!title?.trim() || !issuer?.trim() || !issueDate) {
     throw new APiError(
       400,
       "Title, issuer and issue date are required"
     );
   }
+  console.log("Certificate request body:", req.body);
+console.log("Certificate file received:", Boolean(req.file));
 
   // Upload certificate image if provided
   let certificateImageUrl = "";
 
   if (req.file) {
-    certificateImageUrl = await uploadToCloudinary(
+    const uploadedCertificate = await uploadToCloudinary(
       req.file.buffer,
       "portfolio/certificates"
     );
+
+    certificateImageUrl = getCertificateImageUrl(
+      uploadedCertificate
+    );
+
+    if (!certificateImageUrl) {
+      throw new APiError(
+        500,
+        "Certificate image upload failed"
+      );
+    }
   }
 
-  // Create certificate in MongoDB
   const certification = await Certificate.create({
     title: title.trim(),
     issuer: issuer.trim(),
@@ -47,6 +64,7 @@ const createCertification = asyncHandler(async (req, res) => {
     description: description?.trim() || "",
     certificateUrl: certificateImageUrl,
   });
+  
 
   return res.status(201).json(
     new ApiResponse(
@@ -103,37 +121,43 @@ const updateCertification = asyncHandler(async (req, res) => {
     description,
   } = req.body;
 
-  // Validate required fields
-  if (
-    !title?.trim() ||
-    !issuer?.trim() ||
-    !issueDate
-  ) {
+  if (!title?.trim() || !issuer?.trim() || !issueDate) {
     throw new APiError(
       400,
       "Title, issuer and issue date are required"
     );
   }
 
-  // Find existing certificate
   const existingCertification = await Certificate.findById(id);
 
   if (!existingCertification) {
     throw new APiError(404, "Certification not found");
   }
 
-  // Preserve old image unless a new image is uploaded
+  // Keep existing image unless a new image is uploaded
   let certificateImageUrl =
-    existingCertification.certificateUrl || "";
+    typeof existingCertification.certificateUrl === "string"
+      ? existingCertification.certificateUrl
+      : existingCertification.certificateUrl?.url || "";
 
   if (req.file) {
-    certificateImageUrl = await uploadToCloudinary(
+    const uploadedCertificate = await uploadToCloudinary(
       req.file.buffer,
       "portfolio/certificates"
     );
+
+    certificateImageUrl = getCertificateImageUrl(
+      uploadedCertificate
+    );
+
+    if (!certificateImageUrl) {
+      throw new APiError(
+        500,
+        "Certificate image upload failed"
+      );
+    }
   }
 
-  // Update certificate
   const updatedCertification = await Certificate.findByIdAndUpdate(
     id,
     {

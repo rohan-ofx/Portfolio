@@ -1,5 +1,16 @@
 import useFetch from "../hooks/useFetch.js";
 
+const formatDate = (date) => {
+  if (!date) return "";
+
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+};
+
 const Certification = () => {
   const {
     data: certifications,
@@ -117,7 +128,7 @@ const Certification = () => {
                       <span className="certification-meta-label">
                         Issued
                       </span>
-                      <span>{certification.issueDate}</span>
+                      <span>{formatDate(certification.issueDate)}</span>
                     </p>
                   )}
 

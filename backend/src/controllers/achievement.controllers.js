@@ -13,10 +13,10 @@ const createAchievement = asyncHandler(async (req, res) => {
     link
   } = req.body;
 
-  if (!title || !description || !date) {
+  if (!title || !description) {
     throw new APiError(
       400,
-      "Title, description and date are required"
+      "Title, description are required"
     );
   }
 

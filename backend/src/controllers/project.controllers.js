@@ -153,7 +153,7 @@ const updateProject = asyncHandler(async(req, res)=>{
                 title,
                 description,
                 technologies,
-                image,
+                image: imageUrl,
                 githubUrl,
                 liveUrl,
                 featured

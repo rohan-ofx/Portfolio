@@ -2,36 +2,58 @@ import APiError from "../utils/ApiErrors.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { Message } from "../models/message.model.js";
 import asyncHandler from "../utils/asynchandler.js";
+import sendContactNotification from "../utils/mailer.js";
 
-const createMessage = asyncHandler(async(req,res)=>{
-    const {
-        name,
-        email,
-        subject,
-        message
-    } = req.body;
 
-    if(!name || !email ||!message){
-        throw new APiError(
-            400,
-            "All field are required"
-        );
-    }
+const createMessage = asyncHandler(async (req, res) => {
+  const { name, email, subject, message } = req.body;
 
-    const newMessage = await Message.create({
-        name,
-        email,
-        subject,
-        message 
+  if (
+    !name?.trim() ||
+    !email?.trim() ||
+    !message?.trim()
+  ) {
+    throw new APiError(400, "All fields are required");
+  }
+
+  // Step 1: Save message in MongoDB
+  const newMessage = await Message.create({
+    name: name.trim(),
+    email: email.trim(),
+    subject: subject?.trim() || "",
+    message: message.trim(),
+  });
+
+  // Step 2: Send notification to Gmail
+  try {
+    await sendContactNotification({
+      name: newMessage.name,
+      email: newMessage.email,
+      subject: newMessage.subject,
+      message: newMessage.message,
     });
-    return res.status(201).json(
+  } catch (error) {
+    console.error(
+      "Contact email notification failed:",
+      error.message
+    );
+
+    throw new APiError(
+      502,
+      "Message was saved, but email notification failed. Please try again later."
+    );
+  }
+
+  // Step 3: Send success response
+  return res.status(201).json(
     new ApiResponse(
       201,
       newMessage,
-      "Message sent successfully"
+      "Message saved and email notification sent successfully"
     )
   );
 });
+
 
 
 // GET ALL MESSAGES

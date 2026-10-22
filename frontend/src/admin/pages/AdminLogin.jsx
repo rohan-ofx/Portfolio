@@ -34,16 +34,19 @@ const AdminLogin = () => {
     try {
       setLoading(true);
       setError("");
-
       const response = await api.post("/users/login", formData);
-      const accessToken = response.data.data.accessToken;
 
-      if (!accessToken) {
-        throw new Error("Access token was not returned by the server.");
-      }
+      const { accessToken, refreshToken } = response.data.data;
 
-      localStorage.setItem("accessToken", accessToken);
-      navigate("/admin/dashboard");
+        if (!accessToken || !refreshToken) {
+        throw new Error("Access Token or Refresh Token was not returned.");
+        }
+
+localStorage.setItem("accessToken", accessToken);
+localStorage.setItem("refreshToken", refreshToken);
+
+navigate("/admin/dashboard");
+      
     } catch (err) {
       console.error("Login Error:", err);
 

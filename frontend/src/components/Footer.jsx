@@ -1,43 +1,44 @@
+
 import { Link } from "react-router-dom";
 import useFetch from "../hooks/useFetch.js";
 
 const Footer = () => {
   const {
     data: siteSettings,
-    loading: settingsLoading,
-    error: settingsError,
+    loading,
+    error,
   } = useFetch("/site-settings");
 
-  const {
-    data: codingProfiles,
-    loading: codingLoading,
-    error: codingError,
-  } = useFetch("/coding");
-
-  if (settingsLoading || codingLoading) {
+  if (loading || error) {
     return null;
   }
 
-  if (settingsError || codingError) {
-    return null;
-  }
+  const socialProfiles = [
+    {
+      name: "GitHub",
+      url: siteSettings?.githubUrl,
+    },
+    {
+      name: "LinkedIn",
+      url: siteSettings?.linkedinUrl,
+    },
+    {
+      name: "LeetCode",
+      url: siteSettings?.leetcodeUrl,
+    },
+  ].filter((profile) => profile.url?.trim());
 
   return (
     <footer className="footer">
       <div className="footer-container">
-
         {/* Brand */}
         <div className="footer-brand">
           <h2>{siteSettings?.name}</h2>
 
-          <p>
-            {siteSettings?.title}
-          </p>
+          <p>{siteSettings?.title}</p>
 
           {siteSettings?.bio && (
-            <p className="footer-bio">
-              {siteSettings.bio}
-            </p>
+            <p className="footer-bio">{siteSettings.bio}</p>
           )}
         </div>
 
@@ -52,24 +53,38 @@ const Footer = () => {
 
         {/* Connect */}
         <div className="footer-social">
-          <h3>Connect</h3>
+          <h3>Connect With Me</h3>
 
-          {codingProfiles?.map((profile) => (
-            <a
-              key={profile._id}
-              href={profile.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {profile.icon && (
-                <span>{profile.icon}</span>
-              )}
+          <div className="footer-social-links">
+            {socialProfiles.length > 0 ? (
+              socialProfiles.map((profile) => (
+                <a
+                  key={profile.name}
+                  href={profile.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Visit my ${profile.name} profile`}
+                  className="footer-social-link"
+                >
+                  <span className="footer-social-name">
+                    {profile.name}
+                  </span>
 
-              {profile.platform}
-            </a>
-          ))}
+                  <span
+                    className="footer-social-arrow"
+                    aria-hidden="true"
+                  >
+                    ↗
+                  </span>
+                </a>
+              ))
+            ) : (
+              <p className="footer-social-empty">
+                Social profiles coming soon.
+              </p>
+            )}
+          </div>
         </div>
-
       </div>
 
       {/* Bottom */}

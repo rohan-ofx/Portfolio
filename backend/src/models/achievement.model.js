@@ -15,8 +15,7 @@ const achievementSchema = new Schema(
     },
 
     date: {
-      type: Date,
-      required: true
+      type: Date
     },
 
     organization: {
