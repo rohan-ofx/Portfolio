@@ -39,7 +39,7 @@ import NewCodingProfile from "./admin/pages/NewCodingProfile.jsx";
 import EditCodingProfile from "./admin/pages/EditCodingProfile.jsx";
 import SiteSettings from "./admin/pages/SiteSettings.jsx";
 import Messages from "./admin/pages/Message.jsx";
-import NewProject from "./admin/pages/NewProject.jsx";
+import NewProject from "./admin/pages/Newproject.jsx";
 import EditProject from "./admin/pages/EditProject.jsx";
 
 function App() {
