@@ -19,7 +19,21 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      const isVercel = /^https:\/\/portfolio-[a-z0-9]+-rohan-portfolio\.vercel\.app$/.test(
+        origin || ""
+      );
+
+      if (
+        !origin ||
+        origin === "http://localhost:5173" ||
+        isVercel
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
