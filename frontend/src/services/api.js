@@ -1,7 +1,10 @@
 
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "");
+const baseURL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://portfolio-lry1.onrender.com/api/v1"
+).replace(/\/+$/, "");
 
 const api = axios.create({
   baseURL,
