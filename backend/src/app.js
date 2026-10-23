@@ -20,9 +20,9 @@ const app = express();
 app.use(
   cors({
     origin: (origin, callback) => {
-      const isVercel = /^https:\/\/portfolio-[a-z0-9]+-rohan-portfolio\.vercel\.app$/.test(
-        origin || ""
-      );
+      const isVercel = /^https:\/\/portfolio-[a-z0-9-]+\.vercel\.app$/.test(
+         origin || ""
+          );
 
       if (
         !origin ||
