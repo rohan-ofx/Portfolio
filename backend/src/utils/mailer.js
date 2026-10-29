@@ -1,35 +1,6 @@
 
-import nodemailer from "nodemailer";
-
+const resendApiKey = process.env.RESEND_API_KEY;
 const gmailUser = process.env.GMAIL_USER;
-const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
-
-const transporter =
-  gmailUser && gmailAppPassword
-    ? nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: gmailUser,
-          pass: gmailAppPassword,
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-      })
-    : null;
-
-// Verify SMTP connection when backend starts
-if (transporter) {
-  transporter.verify()
-    .then(() => {
-      console.log("SMTP connection successful");
-    })
-    .catch((error) => {
-      console.error("SMTP verification failed:", error.message);
-    });
-} else {
-  console.error("Gmail credentials are missing");
-}
 
 const sendContactNotification = async ({
   name,
@@ -37,26 +8,45 @@ const sendContactNotification = async ({
   subject,
   message,
 }) => {
-  if (!transporter) {
-    throw new Error("Gmail is not configured.");
+  if (!resendApiKey || !gmailUser) {
+    throw new Error("Resend API key or Gmail address is missing.");
   }
 
-  await transporter.sendMail({
-    from: `"Portfolio Contact Form" <${gmailUser}>`,
-    to: gmailUser,
-    replyTo: email,
-    subject: `New Portfolio Message: ${subject || "No subject"}`,
-    text: [
-      "You received a new message through your portfolio contact form.",
-      "",
-      `Name: ${name}`,
-      `Visitor Email: ${email}`,
-      `Subject: ${subject || "No subject"}`,
-      "",
-      "Message:",
-      message,
-    ].join("\n"),
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "Portfolio Contact Form <onboarding@resend.dev>",
+      to: [gmailUser],
+      reply_to: email,
+      subject: `New Portfolio Message: ${subject || "No subject"}`,
+      text: [
+        "You received a new message through your portfolio contact form.",
+        "",
+        `Name: ${name}`,
+        `Visitor Email: ${email}`,
+        `Subject: ${subject || "No subject"}`,
+        "",
+        "Message:",
+        message,
+      ].join("\n"),
+    }),
   });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      `Resend API error (${response.status}): ${
+        result.message || JSON.stringify(result)
+      }`
+    );
+  }
+
+  console.log("Resend email accepted:", result.id);
 };
 
 export default sendContactNotification;
