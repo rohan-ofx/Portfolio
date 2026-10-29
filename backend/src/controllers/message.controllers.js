@@ -37,11 +37,6 @@ const createMessage = asyncHandler(async (req, res) => {
       "Contact email notification failed:",
       error.message
     );
-
-    throw new APiError(
-      502,
-      "Message was saved, but email notification failed. Please try again later."
-    );
   }
 
   // Step 3: Send success response
