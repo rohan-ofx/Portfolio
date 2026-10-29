@@ -12,8 +12,24 @@ const transporter =
           user: gmailUser,
           pass: gmailAppPassword,
         },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
       })
     : null;
+
+// Verify SMTP connection when backend starts
+if (transporter) {
+  transporter.verify()
+    .then(() => {
+      console.log("SMTP connection successful");
+    })
+    .catch((error) => {
+      console.error("SMTP verification failed:", error.message);
+    });
+} else {
+  console.error("Gmail credentials are missing");
+}
 
 const sendContactNotification = async ({
   name,
@@ -22,9 +38,7 @@ const sendContactNotification = async ({
   message,
 }) => {
   if (!transporter) {
-    throw new Error(
-      "Gmail is not configured. Check GMAIL_USER and GMAIL_APP_PASSWORD in backend .env."
-    );
+    throw new Error("Gmail is not configured.");
   }
 
   await transporter.sendMail({
