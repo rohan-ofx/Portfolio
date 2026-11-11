@@ -27,7 +27,18 @@ https://portfolio-orcin-seven-26.vercel.app
 - backend/ – Backend API
 
 ## Screenshots
-Screenshots coming soon.
+
+### Homepage
+![Homepage](Homepage.png)
+
+### Skills
+![Skills](Skills.png)
+
+### Admin Dashboard
+![Admin Dashboard](Admin.png)
+
+### Site Settings
+![Site Settings](SiteSettings.png)
 
 ## Installation
 Clone the repository:
