@@ -32,13 +32,13 @@ https://portfolio-orcin-seven-26.vercel.app
 ![Homepage](Homepage.png)
 
 ### Skills
-![Skills](Skills.png)
+![Skills](Skill.png)
 
 ### Admin Dashboard
-![Admin Dashboard](Admin.png)
+![Admin Dashboard](AdminDashboard.png)
 
 ### Site Settings
-![Site Settings](SiteSettings.png)
+![Site Settings](SiteSetting.png)
 
 ## Installation
 Clone the repository:
